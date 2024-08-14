@@ -1,4 +1,4 @@
-package com.prototype.userService.models;
+package com.prototype.userService.models.entities;
 
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -10,6 +10,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 @Builder
+@Table(name = "`user`")
 @Entity
 public class User implements Serializable {
     @Id
@@ -22,6 +23,6 @@ public class User implements Serializable {
     @Column(nullable = false)
     private String password;
 
-    private String address;
+    private String city;
 
 }

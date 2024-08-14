@@ -1,7 +1,11 @@
 package com.prototype.userService.services;
 
 import com.prototype.userService.Pojos.UserResponseDTO;
-import com.prototype.userService.models.User;
+import com.prototype.userService.models.entities.User;
+import com.prototype.userService.models.nodes.AddressNode;
+import com.prototype.userService.models.nodes.UserNode;
+import com.prototype.userService.repositories.AddressNodeRepository;
+import com.prototype.userService.repositories.UserNodeRepository;
 import com.prototype.userService.repositories.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -12,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -21,15 +24,19 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AddressNodeRepository addressNodeRepository;
+    private final UserNodeRepository userNodeRepository;
 
-    public UserService(UserRepository userRepository){
+    public UserService(UserRepository userRepository, AddressNodeRepository addressNodeRepository, UserNodeRepository userNodeRepository){
         this.userRepository=userRepository;
+        this.addressNodeRepository=addressNodeRepository;
+        this.userNodeRepository=userNodeRepository;
     }
 
     @Cacheable(value = "users", key = "#id")
     @Async
     public void getUserById(Long id, CompletableFuture<ResponseEntity<?>> completableFuture) {
-        User user= userRepository.findById(id).orElseThrow(()->new EntityNotFoundException("User not found"));
+        User user= userRepository.findById(id).orElseThrow(()->new EntityNotFoundException("UserNode not found"));
         UserResponseDTO userResponseDTO=new UserResponseDTO(user);
         completableFuture.complete(ResponseEntity.ok(userResponseDTO));
     }
@@ -47,15 +54,37 @@ public class UserService {
         completableFuture.complete(ResponseEntity.ok(userResponseDTOS));
     }
 
+    @Cacheable("users")
+    @Async
+    public void getUsersByCity(String city, CompletableFuture<ResponseEntity<?>> completableFuture){
+        List<UserNode> userNodes=addressNodeRepository.findUserNodesByCity(city);
+        if(userNodes==null){
+            throw new EntityNotFoundException("UserNode not found");
+        }
+        List<UserResponseDTO> userResponseDTOS = userNodes.stream()
+                .map(UserResponseDTO::new)
+                .toList();
+        completableFuture.complete(ResponseEntity.ok(userResponseDTOS));
+    }
+
     @CachePut(value = "users", key = "#user.id")
     @Async
-    public void saveUser(String userName, String password, String address, CompletableFuture<ResponseEntity<?>> completableFuture ) {
+    public void saveUser(String userName, String password, String city, CompletableFuture<ResponseEntity<?>> completableFuture ) {
         User user=User.builder()
                 .userName(userName)
                 .password(password)
-                .address(address)
+                .city(city)
                 .build();
         user=userRepository.save(user);
+        AddressNode addressNode=AddressNode.builder()
+                        .city(city)
+                        .build();
+        addressNode = addressNodeRepository.save(addressNode);
+        UserNode userNode=UserNode.builder()
+                        .userName(userName)
+                        .addressNode(addressNode)
+                        .build();
+        userNodeRepository.save(userNode);
         completableFuture.complete(ResponseEntity.ok(user));
     }
 

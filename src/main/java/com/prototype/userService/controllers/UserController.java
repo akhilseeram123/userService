@@ -1,14 +1,11 @@
 package com.prototype.userService.controllers;
 
 import com.prototype.userService.Pojos.CreateUserRequest;
-import com.prototype.userService.models.User;
 import com.prototype.userService.services.UserService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -38,11 +35,21 @@ public class UserController {
         return deferredResult;
     }
 
+    @GetMapping("/{city}/city")
+    public DeferredResult<ResponseEntity<?>> getUsersByCity(@PathVariable String city){
+        DeferredResult<ResponseEntity<?>> deferredResult =new DeferredResult<>();
+        CompletableFuture<ResponseEntity<?>> completableFuture=new CompletableFuture<>();
+        userService.getUsersByCity(city, completableFuture);
+        completableFuture.thenAccept(deferredResult::setResult);
+        return deferredResult;
+    }
+
+
     @PostMapping
     public DeferredResult<ResponseEntity<?>> createUser(@RequestBody CreateUserRequest createUserRequest) {
         DeferredResult<ResponseEntity<?>> deferredResult =new DeferredResult<>();
         CompletableFuture<ResponseEntity<?>> completableFuture=new CompletableFuture<>();
-        userService.saveUser(createUserRequest.getUserName(), createUserRequest.getPassword(), createUserRequest.getAddress(), completableFuture);
+        userService.saveUser(createUserRequest.getUserName(), createUserRequest.getPassword(), createUserRequest.getCity(), completableFuture);
         completableFuture.thenAccept(deferredResult::setResult);
         return deferredResult;
     }
