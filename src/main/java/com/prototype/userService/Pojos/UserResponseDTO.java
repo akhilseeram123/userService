@@ -3,10 +3,12 @@ package com.prototype.userService.Pojos;
 import com.prototype.userService.models.entities.User;
 import com.prototype.userService.models.nodes.UserNode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class UserResponseDTO {
 
     public UserResponseDTO(User user){

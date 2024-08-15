@@ -1,8 +1,8 @@
 spring:
-  cache:
-    type: redis
+  redis:
     host: localhost
     port: 6379
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/userService
@@ -14,9 +14,12 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
   data:
     neo4j:
       uri: bolt://localhost:7687
       username: neo4j
-      password: neo4j
-      database: prototype
+      password: UserService
+
+  kafka:
+    bootstrap-servers: localhost:9092
