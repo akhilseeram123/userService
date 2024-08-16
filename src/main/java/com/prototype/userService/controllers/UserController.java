@@ -9,6 +9,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
+@RequestMapping(path = "/user")
 public class UserController {
 
     private final UserService userService;

@@ -13,6 +13,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,14 +30,16 @@ public class UserService {
     private final UserNodeRepository userNodeRepository;
     private final RedisService redisService;
     private final KafkaSender kafkaSender;
+    private final PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository, AddressNodeRepository addressNodeRepository, KafkaSender kafkaSender,
-                       UserNodeRepository userNodeRepository, RedisService redisService){
+                       UserNodeRepository userNodeRepository, RedisService redisService, PasswordEncoder passwordEncoder){
         this.userRepository=userRepository;
         this.addressNodeRepository=addressNodeRepository;
         this.userNodeRepository=userNodeRepository;
         this.redisService=redisService;
         this.kafkaSender=kafkaSender;
+        this.passwordEncoder=passwordEncoder;
     }
 
     @Async
@@ -81,7 +84,7 @@ public class UserService {
     public void saveUser(String userName, String password, String city, CompletableFuture<ResponseEntity<?>> completableFuture ) {
         User user=User.builder()
                 .userName(userName)
-                .password(password)
+                .password(passwordEncoder.encode(password))
                 .city(city)
                 .build();
         user=userRepository.save(user);
